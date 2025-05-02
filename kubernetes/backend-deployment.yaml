@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: torettonft24/media-app-backend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGODB_URI
+          value: "mongodb+srv://himejjad:Himjjad2025@media-app.cvkjgux.mongodb.net/?retryWrites=true&w=majority&appName=media-app"
+        - name: AWS_ACCESS_KEY_ID
+          value: "AKIAZMGKTHUC3L2AX4JP"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "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"
+        - name: S3_BUCKET
+          value: "media-app-bucket-us-east-1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: ClusterIP
