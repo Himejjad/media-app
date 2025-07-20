@@ -1,27 +1,90 @@
 version: '3.8'
+
 services:
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "80:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
     depends_on:
       - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
-      - MONGODB_URI="mongodb+srv://himejjad:Himjjad2025@media-app.cvkjgux.mongodb.net/?retryWrites=true&w=majority&appName=media-app"
-      - AWS_ACCESS_KEY_ID="AKIAZMGKTHUC3L2AX4JP"
-      - AWS_SECRET_ACCESS_KEY="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"
-      - S3_BUCKET=media-app-bucket-us-east-1
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongo:27017/media-app
+      # WARNING: In production, use secrets management
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET}
+      - FRONTEND_URL=http://localhost
     depends_on:
       - mongo
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./backend/src:/app/src # For development hot reload
+
   mongo:
-    image: mongo:latest
+    image: mongo:6.0-jammy
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=media-app
     volumes:
       - mongo-data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: MongoDB Admin Interface
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    profiles:
+      - admin
+
 volumes:
   mongo-data:
+    driver: local
+
+networks:
+  default:
+    name: media-app-network
