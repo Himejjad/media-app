@@ -230,17 +230,7 @@ services:
       - ./backend:/app
 ```
 
-## 🧪 Testing
 
-```bash
-# Backend tests
-cd backend
-npm test
-
-# Frontend tests
-cd frontend
-npm test
-```
 
 ## 📝 Development
 
@@ -284,26 +274,6 @@ media-app/
 - Implement rate limiting
 - Add CORS configuration
 - Use environment-specific configurations
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙋‍♂️ Support
-
-If you have any questions or need help:
-
-- Create an [Issue](https://github.com/Himejjad/media-app/issues)
-- Check the [Wiki](https://github.com/Himejjad/media-app/wiki) for detailed documentation
-- Contact: [your-email@example.com]
 
 ## 🔗 Related Resources
 
